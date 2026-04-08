@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PibuLant — Skin Intelligence · Tara Ostovarpour</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ══ BRAND PALETTE (from logo + business card) ══ */
+:root {
+  --lav:    #C5B8E8;   /* logo lavender text */
+  --lav2:   #DDD6F5;   /* light lavender bg */
+  --lav3:   #F2EFFE;   /* near-white lavender */
+  --lav4:   #E8E2F8;   /* card bg */
+  --purple: #9B85D0;   /* mid purple */
+  --deep:   #5A3E8C;   /* deep purple for text */
+  --deeper: #3A2468;   /* darkest purple */
+  --leaf:   #6DB86B;   /* logo leaf green */
+  --leaf2:  #4A9448;   /* leaf dark vein */
+  --leaf3:  #8FD08D;   /* leaf highlight */
+  --leaf4:  #D8F0D5;   /* leaf tint bg */
+  --cream:  #FAF8FF;   /* page bg */
+  --white:  #FFFFFF;
+  --text:   #2A1E50;   /* dark text */
+  --textm:  #5C4E80;   /* medium */
+  --textl:  #9488B0;   /* light */
+  --border: rgba(155,133,208,.18);
+  --gold:   #C9A84C;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--cream);
+  color:var(--text);
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* ── CURSOR ── */
+.cursor{width:9px;height:9px;background:var(--deep);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .28s,height .28s,background .28s}
+.cursor-ring{width:34px;height:34px;border:1.5px solid rgba(155,133,208,.4);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .18s ease}
+
+/* ── LAYOUT WRAPPER ── */
+.site-layout {
+  display:grid;
+  grid-template-columns:1fr 320px;
+  min-height:100vh;
+}
+.main-col { overflow:hidden; }
+.sidebar-col {
+  background:var(--lav4);
+  border-left:1px solid var(--border);
+  position:sticky; top:0; height:100vh;
+  overflow-y:auto; display:flex; flex-direction:column;
+  scrollbar-width:thin; scrollbar-color:var(--lav) transparent;
+}
+@media(max-width:960px){
+  .site-layout{grid-template-columns:1fr}
+  .sidebar-col{display:none}
+}
+
+/* ── PROGRESS ── */
+.prog{height:2px;background:var(--lav2);position:fixed;top:0;left:0;right:0;z-index:500}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--leaf));transition:width .4s;width:0}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:320px;z-index:400;
+  padding:18px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:background .4s,padding .4s,box-shadow .4s;
+}
+@media(max-width:960px){nav{right:0}}
+nav.scrolled{background:rgba(242,239,254,.95);backdrop-filter:blur(14px);padding:12px 48px;box-shadow:0 1px 0 var(--border)}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer}
+.nav-wordmark{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;letter-spacing:.3px;color:var(--deep)}
+.nav-links{display:flex;align-items:center;gap:30px;list-style:none}
+.nav-links a{font-size:11px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:var(--textm);text-decoration:none;transition:color .2s;position:relative;cursor:pointer}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;right:100%;height:1px;background:var(--leaf);transition:right .3s}
+.nav-links a:hover{color:var(--deep)}
+.nav-links a:hover::after{right:0}
+.nav-cta{background:var(--deep)!important;color:var(--lav3)!important;padding:9px 20px;border-radius:50px;letter-spacing:1.5px!important}
+.nav-cta::after{display:none!important}
+.nav-cta:hover{background:var(--deeper)!important;color:#fff!important}
+.lang-btn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--textl);background:none;border:1px solid var(--border);padding:6px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;border-radius:50px}
+.lang-btn:hover{border-color:var(--purple);color:var(--deep)}
+
+/* ── PAGE SYSTEM ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ══════════ HERO ══════════ */
+#home{
+  min-height:100vh;background:var(--deeper);
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.hero-bg{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 70% 70%,rgba(107,80,165,.5) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 50% at 10% 10%,rgba(58,36,104,.8) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 10%,rgba(40,24,80,.9) 0%,transparent 50%)}
+/* floating leaf particles */
+.leaf-particles{position:absolute;inset:0;pointer-events:none}
+.lp{position:absolute;opacity:.12;animation:leaffloat linear infinite}
+@keyframes leaffloat{0%{transform:translateY(110vh) rotate(0deg)}100%{transform:translateY(-10vh) rotate(360deg)}}
+.hero-wrap{
+  position:relative;z-index:2;
+  flex:1;display:grid;grid-template-columns:1fr 1fr;
+  align-items:center;padding:130px 48px 80px;gap:60px;
+  max-width:1000px;margin:0 auto;width:100%;
+}
+.hero-eyebrow{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--leaf3);margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--leaf3);opacity:.6}
+h1.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(46px,5.5vw,76px);font-weight:300;line-height:1.06;color:#fff;letter-spacing:-1px;margin-bottom:24px}
+h1.hero-title em{font-style:italic;color:var(--lav)}
+.hero-body{font-size:14px;font-weight:300;line-height:1.85;color:rgba(255,255,255,.5);max-width:400px;margin-bottom:40px}
+.hero-ctas{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:9px;background:var(--leaf);color:var(--deeper);padding:13px 26px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:500;border:none;cursor:pointer;text-decoration:none;transition:all .25s;font-family:'DM Sans',sans-serif;border-radius:50px}
+.btn-primary:hover{background:var(--leaf3);transform:translateY(-1px)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.55);font-size:11px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.18);padding-bottom:2px;transition:all .25s;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-ghost:hover{color:#fff;border-color:#fff}
+
+/* hero right — orbital diagram */
+.hero-visual{position:relative;width:340px;height:340px;margin:0 auto}
+.hv-orbit{position:absolute;border-radius:50%;border:1px solid;top:50%;left:50%;transform:translate(-50%,-50%);animation:slowspin linear infinite}
+.hv-o1{width:300px;height:300px;border-color:rgba(197,184,232,.15);animation-duration:40s}
+.hv-o2{width:220px;height:220px;border-color:rgba(109,184,107,.12);animation-duration:28s;animation-direction:reverse}
+.hv-o3{width:140px;height:140px;border-color:rgba(197,184,232,.1);animation-duration:18s}
+@keyframes slowspin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.hv-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(197,184,232,.25);display:flex;align-items:center;justify-content:center}
+
+/* hero stats bar */
+.hero-stats{position:relative;z-index:2;border-top:1px solid rgba(255,255,255,.06);display:flex;max-width:1000px;margin:0 auto;width:100%;padding:0 48px}
+.hs{flex:1;padding:22px 0;border-right:1px solid rgba(255,255,255,.05);padding-right:28px;padding-left:28px}
+.hs:first-child{padding-left:0}
+.hs:last-child{border-right:none}
+.hs-n{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:var(--lav);line-height:1}
+.hs-l{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:3px}
+
+/* ══════════ SHARED SECTION ══════════ */
+section{padding:100px 48px}
+.container{max-width:1000px;margin:0 auto}
+.sec-eye{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--leaf2);margin-bottom:18px;display:flex;align-items:center;gap:12px}
+.sec-eye::before{content:'';width:20px;height:1px;background:var(--leaf2)}
+h2.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,4vw,52px);font-weight:300;line-height:1.12;color:var(--deeper);letter-spacing:-.5px;margin-bottom:16px}
+h2.sec-title em{font-style:italic;color:var(--purple)}
+.sec-lead{font-size:15px;font-weight:300;line-height:1.85;color:var(--textm);max-width:560px}
+.divider{width:40px;height:1px;background:var(--lav);margin:22px 0}
+
+/* ══════════ HOW IT WORKS ══════════ */
+#how{background:var(--lav3)}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-top:60px;border:1px solid var(--border)}
+.how-card{background:var(--lav3);padding:40px 28px;position:relative;overflow:hidden;transition:background .3s}
+.how-card:hover{background:#fff}
+.how-num{font-family:'Cormorant Garamond',serif;font-size:64px;font-weight:300;color:rgba(155,133,208,.07);position:absolute;top:16px;right:20px;line-height:1}
+.how-ic{font-size:28px;margin-bottom:18px}
+.how-card h3{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--deeper);margin-bottom:10px}
+.how-card p{font-size:12px;line-height:1.8;color:var(--textm);font-weight:300}
+.how-card ul{list-style:none;margin-top:14px}
+.how-card ul li{font-size:11px;color:var(--textl);padding:4px 0;border-top:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.how-card ul li::before{content:'—';color:var(--leaf);font-size:9px}
+
+/* ══════════ BOTANICALS ══════════ */
+#botanicals{background:var(--deeper);color:#fff}
+#botanicals .sec-eye{color:var(--leaf3)}
+#botanicals .sec-eye::before{background:var(--leaf3)}
+#botanicals h2.sec-title{color:#fff}
+#botanicals .sec-lead{color:rgba(255,255,255,.5)}
+#botanicals .divider{background:rgba(255,255,255,.12)}
+.bot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px}
+.bot-card{border:1px solid rgba(255,255,255,.07);padding:28px 20px;transition:border-color .3s,background .3s}
+.bot-card:hover{border-color:rgba(109,184,107,.3);background:rgba(255,255,255,.03)}
+.bot-plant{height:100px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:20px}
+.bot-latin{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;color:var(--leaf3);margin-bottom:5px}
+.bot-name{font-size:15px;font-weight:400;color:#fff;margin-bottom:3px}
+.bot-origin{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:12px}
+.bot-use{font-size:11px;color:rgba(255,255,255,.45);line-height:1.7;font-weight:300}
+
+/* ══════════ ROADMAP ══════════ */
+#roadmap{background:var(--lav4)}
+.rm-track{position:relative;margin-top:60px;padding-left:36px}
+.rm-line{position:absolute;left:9px;top:8px;bottom:8px;width:1px;background:linear-gradient(to bottom,var(--purple),rgba(155,133,208,.1))}
+.rm-phase{position:relative;margin-bottom:50px;padding-left:44px;opacity:0;transform:translateX(-14px);transition:all .6s ease}
+.rm-phase.revealed{opacity:1;transform:translateX(0)}
+.rm-dot{position:absolute;left:-27px;top:6px;width:12px;height:12px;border-radius:50%;border:2px solid var(--purple);background:var(--lav4);transition:background .3s}
+.rm-phase.active .rm-dot{background:var(--purple)}
+.rm-tag{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--textl);margin-bottom:8px}
+.rm-tag span{background:var(--leaf);color:var(--deeper);padding:2px 8px;font-size:8px;letter-spacing:2px;margin-left:8px;border-radius:50px}
+.rm-phase h3{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--deeper);margin-bottom:8px}
+.rm-phase p{font-size:13px;color:var(--textm);line-height:1.8;font-weight:300;max-width:520px}
+.rm-phase ul{list-style:none;margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.rm-phase ul li{font-size:10px;letter-spacing:.8px;color:var(--purple);border:1px solid var(--border);padding:3px 10px;border-radius:50px}
+
+/* ══════════ ABOUT PAGE ══════════ */
+#about-hero{min-height:55vh;background:var(--deeper);display:flex;align-items:flex-end;padding:120px 48px 72px}
+#about-hero .container h1{font-family:'Cormorant Garamond',serif;font-size:clamp(44px,6vw,74px);font-weight:300;color:#fff;line-height:1.08;letter-spacing:-.5px;margin-top:14px}
+#about-hero .container h1 em{font-style:italic;color:var(--lav)}
+
+#about-story{background:var(--lav3)}
+.story-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:start}
+@media(max-width:900px){.story-grid{grid-template-columns:1fr;gap:40px}}
+.story-left blockquote{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,3vw,28px);font-weight:300;line-height:1.5;color:var(--deeper);border-left:2px solid var(--leaf);padding-left:24px;margin:28px 0}
+.story-left p{font-size:14px;color:var(--textm);line-height:1.9;margin-bottom:16px;font-weight:300}
+.founder-card{background:#fff;padding:32px;border:1px solid var(--border);border-radius:2px}
+.founder-av{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--deep));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;margin-bottom:18px;font-weight:300}
+.founder-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--deeper);margin-bottom:3px}
+.founder-title{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--textl);margin-bottom:18px}
+.founder-contact{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.fc-row{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--textm);font-weight:300}
+.fc-ic{font-size:14px;width:18px;flex-shrink:0}
+.founder-bio{font-size:12px;color:var(--textm);line-height:1.8;font-weight:300;padding-top:16px;border-top:1px solid var(--border)}
+.ftags{display:flex;flex-wrap:wrap;gap:5px;margin-top:16px}
+.ftag{font-size:9px;letter-spacing:1px;color:var(--purple);border:1px solid var(--border);padding:3px 10px;border-radius:50px}
+
+/* ══════════ TECH PAGE ══════════ */
+#tech-hero{min-height:55vh;background:linear-gradient(150deg,var(--deeper) 55%,var(--deep));display:flex;align-items:flex-end;padding:120px 48px 72px}
+#tech-hero .container h1{font-family:'Cormorant Garamond',serif;font-size:clamp(44px,6vw,74px);font-weight:300;color:#fff;line-height:1.08;letter-spacing:-.5px;margin-top:14px}
+#tech-hero .container h1 em{font-style:italic;color:var(--lav)}
+#tech-detail{background:var(--lav3)}
+.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;margin-top:56px}
+@media(max-width:900px){.tech-grid{grid-template-columns:1fr;gap:32px}}
+.tech-spec{background:#fff;padding:22px 24px;margin-bottom:10px;border-left:3px solid var(--lav);transition:border-color .2s,background .2s}
+.tech-spec:hover{border-color:var(--leaf);background:var(--lav3)}
+.ts-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--textl);margin-bottom:6px}
+.ts-name{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;color:var(--deeper);margin-bottom:7px}
+.ts-detail{font-size:11px;color:var(--textm);line-height:1.7;font-weight:300}
+.ts-tech{font-family:monospace;font-size:9px;color:var(--purple);letter-spacing:.8px;margin-top:7px;opacity:.8}
+.ai-flow{background:var(--deeper);padding:32px;color:#fff}
+.af-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--leaf3);margin-bottom:24px}
+.af-step{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.af-step:last-child{border-bottom:none}
+.af-n{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:rgba(197,184,232,.3);line-height:1;flex-shrink:0;width:30px}
+.af-step h4{font-size:12px;font-weight:500;margin-bottom:4px;color:#fff}
+.af-step p{font-size:10px;color:rgba(255,255,255,.4);line-height:1.6;font-weight:300}
+
+/* ══════════ PRODUCTS PAGE ══════════ */
+#products-hero{min-height:50vh;background:var(--lav4);display:flex;align-items:flex-end;padding:120px 48px 72px}
+#products-hero .container h1{font-family:'Cormorant Garamond',serif;font-size:clamp(44px,6vw,72px);font-weight:300;color:var(--deeper);line-height:1.08;letter-spacing:-.5px;margin-top:14px}
+#products-hero .container h1 em{font-style:italic;color:var(--purple)}
+#products-list{background:var(--lav3)}
+.prod-grid{display:grid;gap:2px;margin-top:56px}
+.prod-row{display:grid;grid-template-columns:150px 1fr auto;background:#fff;border:1px solid var(--border);overflow:hidden;align-items:stretch;transition:box-shadow .3s}
+.prod-row:hover{box-shadow:0 6px 28px rgba(90,62,140,.1)}
+@media(max-width:700px){.prod-row{grid-template-columns:1fr}.prod-bottle-col{display:none}.prod-action-col{border-left:none;border-top:1px solid var(--border)}}
+.prod-bottle-col{display:flex;align-items:center;justify-content:center;padding:28px 14px;background:var(--lav4);border-right:1px solid var(--border)}
+.prod-info-col{padding:28px 32px}
+.prod-badge-txt{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--textl);margin-bottom:8px}
+.prod-name-txt{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--deeper);margin-bottom:8px}
+.prod-desc-txt{font-size:12px;color:var(--textm);line-height:1.7;margin-bottom:12px;font-weight:300}
+.prod-tags-row{display:flex;flex-wrap:wrap;gap:5px}
+.ptag{font-size:9px;letter-spacing:.8px;color:var(--purple);border:1px solid var(--border);padding:3px 9px;border-radius:50px}
+.ptag.ir{border-color:rgba(109,184,107,.3);color:var(--leaf2)}
+.prod-action-col{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 28px;border-left:1px solid var(--border);gap:10px;min-width:165px}
+.prod-price-txt{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--deeper);text-align:center;line-height:1}
+.prod-vol-txt{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--textl);text-align:center;margin-bottom:4px}
+.prod-btn{width:100%;background:var(--deeper);color:#fff;border:none;padding:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;transition:background .2s;border-radius:50px}
+.prod-btn:hover{background:var(--deep)}
+.prod-btn.added{background:var(--leaf2)}
+
+/* ══════════ CONTACT PAGE ══════════ */
+#contact-hero{min-height:50vh;background:var(--deeper);display:flex;align-items:flex-end;padding:120px 48px 72px}
+#contact-hero .container h1{font-family:'Cormorant Garamond',serif;font-size:clamp(44px,6vw,72px);font-weight:300;color:#fff;line-height:1.08;letter-spacing:-.5px;margin-top:14px}
+#contact-hero .container h1 em{font-style:italic;color:var(--lav)}
+#contact-form-section{background:var(--lav3)}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;margin-top:56px}
+@media(max-width:900px){.contact-grid{grid-template-columns:1fr;gap:40px}}
+.contact-left p{font-size:14px;color:var(--textm);line-height:1.9;font-weight:300;margin-bottom:28px}
+.ci-row{display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:14px}
+.ci-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--textl);width:76px;flex-shrink:0;padding-top:2px}
+.ci-val{font-size:13px;color:var(--text);font-weight:300}
+.form-group{margin-bottom:20px}
+.form-label{display:block;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--textl);margin-bottom:7px}
+.form-input,.form-select,.form-textarea{width:100%;background:#fff;border:1px solid var(--border);padding:13px 15px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;border-radius:2px;-webkit-appearance:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--purple)}
+.form-textarea{resize:vertical;min-height:110px}
+.form-submit{background:var(--deeper);color:#fff;border:none;padding:14px 32px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;transition:background .2s;width:100%;border-radius:50px}
+.form-submit:hover{background:var(--deep)}
+.form-success{display:none;background:rgba(109,184,107,.08);border:1px solid rgba(109,184,107,.3);padding:18px;text-align:center;font-size:13px;color:var(--leaf2);border-radius:2px}
+
+/* ══════════ FOOTER ══════════ */
+footer{background:var(--deeper);color:rgba(255,255,255,.35);padding:52px 48px}
+.footer-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:36px;align-items:end}
+.footer-brand{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.footer-tagline{font-size:12px;font-weight:300;color:rgba(255,255,255,.3)}
+.footer-nav{display:flex;gap:24px;flex-wrap:wrap}
+.footer-nav a{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.28);text-decoration:none;transition:color .2s;cursor:pointer}
+.footer-nav a:hover{color:var(--leaf3)}
+.footer-copy{font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.16);margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.05);max-width:1000px;margin-left:auto;margin-right:auto}
+
+/* ══════════ SIDEBAR ══════════ */
+.sb-section{padding:28px 24px;border-bottom:1px solid var(--border)}
+.sb-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--textl);margin-bottom:14px}
+
+/* founder card in sidebar */
+.sb-founder{background:var(--deeper);padding:24px;margin:24px 24px 0;border-radius:2px;color:#fff}
+.sb-founder-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--deep));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;margin-bottom:12px}
+.sb-founder-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:#fff;margin-bottom:2px}
+.sb-founder-title{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:12px}
+.sb-founder-bio{font-size:11px;color:rgba(255,255,255,.5);line-height:1.7;font-weight:300}
+.sb-contact-row{display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;font-weight:300}
+.sb-contact-row a{color:rgba(255,255,255,.45);text-decoration:none}
+.sb-contact-row a:hover{color:var(--leaf3)}
+
+/* personal formula widget in sidebar */
+.sb-formula{padding:24px;background:var(--lav4)}
+.sb-formula-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;color:var(--deeper);margin-bottom:4px}
+.sb-formula-sub{font-size:10px;color:var(--textl);margin-bottom:16px;line-height:1.5}
+.sb-q{margin-bottom:12px}
+.sb-q label{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--textl);margin-bottom:5px}
+.sb-q select,.sb-q input{width:100%;background:#fff;border:1px solid var(--border);padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);outline:none;border-radius:2px;-webkit-appearance:none;transition:border-color .2s}
+.sb-q select:focus,.sb-q input:focus{border-color:var(--purple)}
+.sb-analyze-btn{width:100%;background:var(--deeper);color:#fff;border:none;padding:11px;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .2s;border-radius:50px;margin-top:4px}
+.sb-analyze-btn:hover{background:var(--deep)}
+.sb-result{display:none;margin-top:16px;background:#fff;border:1px solid var(--border);padding:14px;border-radius:2px}
+.sb-res-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--textl);margin-bottom:8px}
+.sb-ing{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px}
+.sb-ing:last-child{border-bottom:none}
+.sb-ing-name{color:var(--text);font-weight:400}
+.sb-ing-ir{font-size:9px;color:var(--leaf2);margin-left:4px}
+.sb-ing-pct{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--purple)}
+.sb-order-btn{width:100%;background:var(--leaf);color:var(--deeper);border:none;padding:10px;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .2s;border-radius:50px;margin-top:12px;font-weight:500}
+.sb-order-btn:hover{background:var(--leaf3)}
+.sb-order-confirm{display:none;text-align:center;font-size:11px;color:var(--leaf2);padding:8px;font-weight:500}
+
+/* demo card in sidebar */
+.sb-demo{padding:24px;background:var(--lav4);border-top:1px solid var(--border)}
+.sb-demo-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--leaf);color:var(--deeper);border:none;padding:13px;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:500;border-radius:50px;transition:background .2s;margin-top:12px}
+.sb-demo-btn:hover{background:var(--leaf3)}
+
+/* ══ REVEAL ══ */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .65s ease,transform .65s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--deeper);color:#fff;padding:12px 24px;border-radius:50px;font-size:12px;font-weight:500;box-shadow:0 8px 24px rgba(58,36,104,.3);z-index:1000;opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<div class="prog"><div class="prog-fill" id="prog"></div></div>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cring"></div>
+<div class="toast" id="toast"></div>
+
+<!-- ══ NAV ══ -->
+<nav id="nav">
+  <a class="nav-logo" onclick="showPage('home')">
+    <svg width="36" height="36" viewBox="0 0 76 76" fill="none">
+      <circle cx="38" cy="38" r="38" fill="#EDE8F5"/>
+      <rect x="14" y="40" width="48" height="24" rx="8" fill="#C8B8E8"/>
+      <rect x="14" y="40" width="48" height="10" rx="5" fill="#9B7EC8"/>
+      <rect x="18" y="36" width="40" height="8" rx="4" fill="#B8A4DC"/>
+      <circle cx="27" cy="45" r="2" fill="#6B4FA0" opacity=".6"/>
+      <circle cx="38" cy="45" r="2" fill="#6B4FA0" opacity=".6"/>
+      <circle cx="49" cy="45" r="2" fill="#6B4FA0" opacity=".6"/>
+      <path d="M38 8 C30 18 24 28 30 36 C34 40 44 38 47 30 C51 20 44 10 38 8Z" fill="#6DB86B" opacity=".9"/>
+      <path d="M38 8 C38 20 38 30 34 36" stroke="#4A9448" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+      <path d="M58 18 L59 21 L62 22 L59 23 L58 26 L57 23 L54 22 L57 21Z" fill="#C8B8E8" opacity=".8"/>
+    </svg>
+    <span class="nav-wordmark">PibuLant</span>
+  </a>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')">Home</a></li>
+    <li><a onclick="showPage('technology')">Technology</a></li>
+    <li><a onclick="showPage('products')">Products</a></li>
+    <li><a onclick="showPage('about')">About</a></li>
+    <li><a onclick="showPage('contact')">Contact</a></li>
+    <li><a class="nav-cta" onclick="openDemo()">Try Demo</a></li>
+  </ul>
+  <button class="lang-btn" onclick="toggleLang()">EN / 한국어</button>
+</nav>
+
+<!-- ══ LAYOUT ══ -->
+<div class="site-layout">
+
+<!-- ════════════ MAIN COLUMN ════════════ -->
+<div class="main-col">
+
+<!-- ░░░░ HOME ░░░░ -->
+<div class="page active" id="page-home">
+
+<section id="home">
+  <div class="hero-bg"></div>
+  <!-- floating leaves -->
+  <div class="leaf-particles" id="leaf-p"></div>
+  <div class="hero-wrap">
+    <div class="hero-left">
+      <div class="hero-eyebrow" data-kr="맞춤형 스킨케어 · 낭비 없음">Personalized Skincare · Zero Waste</div>
+      <h1 class="hero-title">Your formula.<br>Your size.<br><em>Zero waste.</em></h1>
+      <p class="hero-body" data-kr="매년 수십억 개의 스킨케어 제품이 버려집니다 — 잘못된 공식, 잘못된 피부. PibuLant는 AI로 당신의 피부를 분석하고, 당신만을 위해 소량 제조합니다.">
+        Every year, billions of skincare products get thrown away — wrong formula, wrong skin.
+        PibuLant uses AI photo analysis to understand your skin, builds your exact formula,
+        and produces it in small batches through partner labs.
+        Only what you need. Nothing more.
+      </p>
+      <div class="hero-ctas">
+        <a class="btn-primary" onclick="openDemo()" data-kr="무료 피부 분석 시작">
+          Analyze My Skin — Free
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6.5h9M7 2l4.5 4.5L7 11"/></svg>
+        </a>
+        <a class="btn-ghost" onclick="showPage('technology')" data-kr="기술 알아보기">How It Works</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-visual">
+        <div class="hv-orbit hv-o1"></div>
+        <div class="hv-orbit hv-o2"></div>
+        <div class="hv-orbit hv-o3"></div>
+        <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 340 340">
+          <circle cx="170" cy="22" r="5" fill="#C5B8E8" opacity=".8"/>
+          <text x="180" y="26" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,.4)" letter-spacing="1.5">pH</text>
+          <line x1="170" y1="27" x2="170" y2="120" stroke="rgba(197,184,232,.12)" stroke-width="1"/>
+          <circle cx="318" cy="170" r="5" fill="#6DB86B" opacity=".8"/>
+          <text x="283" y="167" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,.35)" letter-spacing="1.5" text-anchor="end">SEBUM</text>
+          <line x1="313" y1="170" x2="220" y2="170" stroke="rgba(109,184,107,.12)" stroke-width="1"/>
+          <circle cx="170" cy="318" r="5" fill="#C5B8E8" opacity=".6"/>
+          <text x="180" y="322" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,.3)" letter-spacing="1.5">MELANIN</text>
+          <line x1="170" y1="313" x2="170" y2="220" stroke="rgba(197,184,232,.1)" stroke-width="1"/>
+          <circle cx="22" cy="170" r="5" fill="#6DB86B" opacity=".6"/>
+          <text x="36" y="167" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,.3)" letter-spacing="1.5">SENS.</text>
+          <line x1="27" y1="170" x2="120" y2="170" stroke="rgba(109,184,107,.1)" stroke-width="1"/>
+        </svg>
+        <div class="hv-center">
+          <svg width="52" height="52" viewBox="0 0 76 76" fill="none">
+            <rect x="14" y="40" width="48" height="24" rx="8" fill="rgba(197,184,232,.35)"/>
+            <rect x="14" y="40" width="48" height="10" rx="5" fill="rgba(197,184,232,.55)"/>
+            <rect x="18" y="36" width="40" height="8" rx="4" fill="rgba(197,184,232,.45)"/>
+            <path d="M38 8 C30 18 24 28 30 36 C34 40 44 38 47 30 C51 20 44 10 38 8Z" fill="rgba(109,184,107,.65)"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hs"><div class="hs-n">77%</div><div class="hs-l" data-kr="스킨케어 낭비율">Skincare wasted globally</div></div>
+    <div class="hs"><div class="hs-n">10ml</div><div class="hs-l" data-kr="최소 배치 사이즈">Minimum batch size</div></div>
+    <div class="hs"><div class="hs-n">AI</div><div class="hs-l" data-kr="사진 분석">Photo skin analysis</div></div>
+    <div class="hs"><div class="hs-n">0</div><div class="hs-l" data-kr="잉여 재고">Surplus inventory</div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="sec-eye reveal" data-kr="작동 원리">How It Works</div>
+    <h2 class="sec-title reveal">Photo. Formula. <em>Your batch.</em></h2>
+    <div class="divider reveal"></div>
+    <p class="sec-lead reveal" data-kr="사진 한 장으로 AI가 분석하고, 당신만을 위한 공식을 소량 제조합니다.">Take a photo. Answer a few questions. Get a formula made exactly for your skin — produced in small batches only when you order.</p>
+    <div class="how-grid">
+      <div class="how-card reveal">
+        <div class="how-num">01</div>
+        <div class="how-ic">📸</div>
+        <h3>AI analyzes your photo</h3>
+        <p>Take a photo of your skin — no hardware, no clinic visit, no invasive test. Just your phone camera in natural light.</p>
+        <ul>
+          <li>Skin tone & pigmentation mapping</li>
+          <li>Sebum zone & pore detection</li>
+          <li>Redness & barrier damage identification</li>
+          <li>Texture & hydration surface reading</li>
+        </ul>
+      </div>
+      <div class="how-card reveal" style="transition-delay:.1s">
+        <div class="how-num">02</div>
+        <div class="how-ic">🧠</div>
+        <h3>AI builds your formula</h3>
+        <p>Photo analysis + questionnaire → AI engine generates your exact active ingredient formula at calibrated concentrations for your skin's specific needs.</p>
+        <ul>
+          <li>Iranian botanical actives selection</li>
+          <li>K-beauty biotechnology base</li>
+          <li>Concentration per skin analysis</li>
+          <li>Sensitivity-adjusted formula</li>
+        </ul>
+      </div>
+      <div class="how-card reveal" style="transition-delay:.2s">
+        <div class="how-num">03</div>
+        <div class="how-ic">🧪</div>
+        <h3>Partner lab makes it for you</h3>
+        <p>Your formula is produced in small batches (10–20ml) by PibuLant partner labs — only when you order. No pre-made stock. No surplus. Zero waste.</p>
+        <ul>
+          <li>Made to order — never pre-stocked</li>
+          <li>10–20ml per formula (exact supply)</li>
+          <li>Iranian botanical actives sourced directly</li>
+          <li>Delivered within your usage period</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOTANICALS -->
+<section id="botanicals">
+  <div class="container">
+    <div class="sec-eye reveal" data-kr="이란 식물 활성 성분">Iranian Botanical Actives</div>
+    <h2 class="sec-title reveal" style="color:#fff">Ancient plants.<br><em style="color:var(--leaf3)">Calibrated science.</em></h2>
+    <div class="divider reveal" style="background:rgba(255,255,255,.12)"></div>
+    <p class="sec-lead reveal">Iran's botanical heritage — Saffron, Licorice, Thyme, Rosehip — holds some of the most potent skin actives known to cosmetic science. PibuLant brings them to precision formulation.</p>
+    <div class="bot-grid">
+      <div class="bot-card reveal">
+        <div class="bot-plant"><svg width="70" height="100" viewBox="0 0 70 100"><line x1="35" y1="92" x2="35" y2="32" stroke="#6DB86B" stroke-width="1.8"/><path d="M35 65 C25 60 18 50 16 40" stroke="#4A9448" stroke-width="1.4" fill="none"/><path d="M35 55 C45 50 52 40 54 30" stroke="#4A9448" stroke-width="1.4" fill="none"/><ellipse cx="35" cy="25" rx="13" ry="18" fill="#8060A8" opacity=".8" transform="rotate(-15 35 25)"/><ellipse cx="35" cy="25" rx="13" ry="18" fill="#7050A0" opacity=".6" transform="rotate(20 35 25)"/><ellipse cx="35" cy="23" rx="11" ry="16" fill="#9878C8" opacity=".5"/><line x1="32" y1="18" x2="27" y2="4" stroke="#CC2800" stroke-width="1.4" stroke-linecap="round"/><line x1="35" y1="16" x2="35" y2="2" stroke="#CC2800" stroke-width="1.4" stroke-linecap="round"/><line x1="38" y1="18" x2="43" y2="4" stroke="#CC2800" stroke-width="1.4" stroke-linecap="round"/><circle cx="27" cy="4" r="2.5" fill="#FF4000"/><circle cx="35" cy="2" r="2.5" fill="#FF4000"/><circle cx="43" cy="4" r="2.5" fill="#FF4000"/></svg></div>
+        <div class="bot-latin">Crocus sativus</div>
+        <div class="bot-name">Saffron</div>
+        <div class="bot-origin">📍 Iran · Kurdistan</div>
+        <div class="bot-use">Tyrosinase inhibitor — calibrated brightening at precise melanin index readings.</div>
+      </div>
+      <div class="bot-card reveal" style="transition-delay:.1s">
+        <div class="bot-plant"><svg width="70" height="100" viewBox="0 0 70 100"><path d="M35 92 C33 78 30 64 28 52" stroke="#B8963C" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M28 52 C22 38 18 24 21 10" stroke="#A08030" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M28 52 C36 40 44 32 50 18" stroke="#A08030" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="20" cy="9" rx="7" ry="5" fill="#D4B060" transform="rotate(-30 20 9)"/><ellipse cx="20" cy="9" rx="4.5" ry="3.5" fill="#B89040" transform="rotate(-30 20 9)"/><ellipse cx="51" cy="16" rx="6" ry="4.5" fill="#D4B060" transform="rotate(20 51 16)"/><ellipse cx="51" cy="16" rx="3.5" ry="3" fill="#B89040" transform="rotate(20 51 16)"/></svg></div>
+        <div class="bot-latin">Glycyrrhiza glabra</div>
+        <div class="bot-name">Licorice Root</div>
+        <div class="bot-origin">📍 Iran · Isfahan</div>
+        <div class="bot-use">Glabridin for barrier restoration — pH-optimized anti-inflammatory and ceramide support.</div>
+      </div>
+      <div class="bot-card reveal" style="transition-delay:.2s">
+        <div class="bot-plant"><svg width="70" height="100" viewBox="0 0 70 100"><path d="M35 92 C35 78 33 64 31 52" stroke="#4A9448" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M31 52 C25 40 22 28 24 16" stroke="#4A9448" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M31 52 C39 42 47 34 51 22" stroke="#4A9448" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="24" cy="38" rx="4.5" ry="2.8" fill="#6DB86B" opacity=".85" transform="rotate(-28 24 38)"/><ellipse cx="40" cy="46" rx="4.5" ry="2.8" fill="#6DB86B" opacity=".85" transform="rotate(28 40 46)"/><ellipse cx="22" cy="24" rx="4.5" ry="2.8" fill="#6DB86B" opacity=".85" transform="rotate(-22 22 24)"/><ellipse cx="44" cy="32" rx="4.5" ry="2.8" fill="#6DB86B" opacity=".85" transform="rotate(22 44 32)"/><circle cx="24" cy="14" r="3.5" fill="#8878C8" opacity=".8"/><circle cx="52" cy="20" r="3.5" fill="#8878C8" opacity=".8"/></svg></div>
+        <div class="bot-latin">Thymus vulgaris</div>
+        <div class="bot-name">Thyme</div>
+        <div class="bot-origin">📍 Iran · Zagros Mts.</div>
+        <div class="bot-use">Antimicrobial against C. acnes — sebum-level-calibrated for active acne pathways.</div>
+      </div>
+      <div class="bot-card reveal" style="transition-delay:.3s">
+        <div class="bot-plant"><svg width="70" height="100" viewBox="0 0 70 100"><path d="M35 92 C35 78 33 64 32 52" stroke="#7A6040" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M32 52 C26 40 24 26 26 14" stroke="#7A6040" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M32 52 C40 40 48 30 52 18" stroke="#7A6040" stroke-width="1.3" fill="none" stroke-linecap="round"/><ellipse cx="26" cy="13" rx="9" ry="12" fill="#D84030"/><ellipse cx="26" cy="13" rx="7" ry="10" fill="#E85040"/><ellipse cx="24" cy="9" rx="3" ry="4" fill="rgba(255,255,255,.18)"/><path d="M23 4 C24 2 26 3 26 5" stroke="#4A9448" stroke-width=".9" fill="none"/><path d="M26 3 C27 1 29 2 29 5" stroke="#4A9448" stroke-width=".9" fill="none"/><ellipse cx="52" cy="16" rx="8" ry="10" fill="#C83020"/><ellipse cx="52" cy="16" rx="6" ry="8" fill="#D84030"/><ellipse cx="50" cy="12" rx="2.5" ry="3" fill="rgba(255,255,255,.15)"/></svg></div>
+        <div class="bot-latin">Rosa canina</div>
+        <div class="bot-name">Rosehip</div>
+        <div class="bot-origin">📍 Iran · Alborz Mts.</div>
+        <div class="bot-use">Trans-retinoic acid precursors + EFAs — collagen support for COL1A1 pathway activity.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <div class="sec-eye reveal" data-kr="개발 로드맵">Development Roadmap</div>
+    <h2 class="sec-title reveal">Three phases.<br><em>One vision.</em></h2>
+    <div class="divider reveal"></div>
+    <div class="rm-track">
+      <div class="rm-line"></div>
+      <div class="rm-phase active reveal">
+        <div class="rm-dot"></div>
+        <div class="rm-tag">Phase 01 <span>LIVE NOW</span></div>
+        <h3>AI Skin Analysis App + Lab Partnership</h3>
+        <p>AI photo analysis identifies skin concerns without any hardware. Users upload a photo, answer a questionnaire, receive a personalized formula, and order their small-batch product directly — made by partner labs on demand.</p>
+        <ul><li>Working web application MVP</li><li>AI photo + questionnaire analysis</li><li>Partner lab network (in progress)</li><li>Mobile app in development</li></ul>
+      </div>
+      <div class="rm-phase reveal" style="transition-delay:.15s">
+        <div class="rm-dot"></div>
+        <div class="rm-tag">Phase 02 <span>2026–2027</span></div>
+        <h3>Iranian Botanical Product Line + Lab Scale-up</h3>
+        <p>Expand partner lab network for reliable small-batch production. Launch the full Iranian botanical product line — Saffron, Licorice, Thyme, Rosehip — blended with K-beauty biotechnology bases. Each product manufactured only when ordered.</p>
+        <ul><li>Partner lab agreements (Korea)</li><li>Saffron Glow Serum · 10ml</li><li>Licorice Barrier Cream · 15ml</li><li>Thyme Clarifying Gel · 10ml</li></ul>
+      </div>
+      <div class="rm-phase reveal" style="transition-delay:.3s">
+        <div class="rm-dot"></div>
+        <div class="rm-tag">Phase 03 <span>2027–2028</span></div>
+        <h3>AI Enhancement + Market Expansion</h3>
+        <p>Improve AI analysis accuracy with larger skin database. Expand to more skin concern categories. Build longitudinal skin tracking — so the formula evolves as your skin changes over time.</p>
+        <ul><li>Expanded AI skin database</li><li>Longitudinal tracking & re-formulation</li><li>International market entry (SE Asia)</li><li>B2B skincare brand partnerships</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO CTA strip -->
+<section style="background:var(--deeper);padding:80px 48px;text-align:center">
+  <div class="container" style="max-width:620px">
+    <div class="sec-eye reveal" style="justify-content:center;color:var(--leaf3)" data-kr="지금 체험하기">Experience PibuLant</div>
+    <h2 class="sec-title reveal" style="color:#fff">See your skin<br><em>decoded live.</em></h2>
+    <p class="sec-lead reveal" style="color:rgba(255,255,255,.45);margin:0 auto 36px" data-kr="웹 앱 MVP — 3분이면 전체 경험을 확인할 수 있습니다.">Try the web app MVP — the full experience takes 3 minutes and demonstrates the complete PibuLant system end to end.</p>
+    <a class="btn-primary reveal" onclick="openDemo()" style="display:inline-flex;margin:0 auto" data-kr="스킨 분석 시작">
+      Launch Skin Analysis
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6.5h9M7 2l4.5 4.5L7 11"/></svg>
+    </a>
+  </div>
+</section>
+
+</div><!-- end page-home -->
+
+<!-- ░░░░ TECHNOLOGY ░░░░ -->
+<div class="page" id="page-technology">
+<section id="tech-hero"><div class="container">
+  <div class="sec-eye" style="color:var(--leaf3)" data-kr="피부 과학">The Science</div>
+  <h1>Precision skincare<br>starts with <em>measurement.</em></h1>
+</div></section>
+<section id="tech-detail"><div class="container">
+  <div class="sec-eye reveal" data-kr="바이오마커 감지">Biomarker Detection</div>
+  <h2 class="sec-title reveal">Four signals.<br><em>Complete picture.</em></h2>
+  <div class="tech-grid">
+    <div class="tech-left">
+      <div class="tech-spec reveal"><div class="ts-label">Biomarker 01</div><div class="ts-name">Skin pH</div><div class="ts-detail">Measured via electrochemical detection. pH directly governs barrier function, microbial balance, and enzyme activity. A 0.5 deviation from optimal pH significantly alters ingredient absorption.</div><div class="ts-tech">Method: Potentiometric electrochemical · Range: 4.0–7.0</div></div>
+      <div class="tech-spec reveal" style="transition-delay:.1s"><div class="ts-label">Biomarker 02</div><div class="ts-name">Sebum Level</div><div class="ts-detail">Measured via optical lipid detection. Sebum overproduction is driven by SRD5A1 gene activity and directly informs whether oil-controlling or barrier-restoring formulas are needed.</div><div class="ts-tech">Method: Optical lipid spectroscopy · Unit: μg/cm²</div></div>
+      <div class="tech-spec reveal" style="transition-delay:.2s"><div class="ts-label">Biomarker 03</div><div class="ts-name">Melanin Index</div><div class="ts-detail">Measured via spectrophotometric reflectance at 660nm and 940nm LED wavelengths. Correlates with tyrosinase enzyme activity and MC1R gene expression.</div><div class="ts-tech">Method: Dual-wavelength spectrophotometry · LED: 660nm / 940nm</div></div>
+      <div class="tech-spec reveal" style="transition-delay:.3s"><div class="ts-label">Biomarker 04</div><div class="ts-name">Sensitivity Score</div><div class="ts-detail">Derived from electrochemical impedance measuring transepidermal water loss proxy, combined with questionnaire-weighted inputs. Maps to cytokine pathway tendency (IL-6, IL-1β).</div><div class="ts-tech">Method: Impedance spectroscopy + questionnaire · Scale: 0–100</div></div>
+    </div>
+    <div class="tech-right reveal" style="transition-delay:.15s">
+      <div class="ai-flow">
+        <div class="af-title" data-kr="AI 포뮬레이션 엔진">AI Formulation Engine</div>
+        <div class="af-step"><div class="af-n">1</div><div><h4>Biomarker normalization</h4><p>Raw sensor readings normalized against population baselines and cross-validated between measurement sites.</p></div></div>
+        <div class="af-step"><div class="af-n">2</div><div><h4>Genetic tendency mapping</h4><p>Values cross-referenced against gene-biomarker correlations. Six genetic pathways scored: FLG, MC1R/TYR, IL-6, SRD5A1, COL1A1, NRF2.</p></div></div>
+        <div class="af-step"><div class="af-n">3</div><div><h4>Active ingredient scoring</h4><p>Each active ingredient is scored against all six pathway outputs. Final formula selects top-scoring ingredients with calibrated concentrations.</p></div></div>
+        <div class="af-step"><div class="af-n">4</div><div><h4>Safety constraint validation</h4><p>Concentration limits, ingredient interactions, and sensitivity thresholds validated before formula is finalized.</p></div></div>
+        <div class="af-step"><div class="af-n">5</div><div><h4>Product mapping</h4><p>Formula mapped to small-batch product recommendations (10–20ml) from the PibuLant Iranian botanical line.</p></div></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+</div><!-- end page-technology -->
+
+<!-- ░░░░ PRODUCTS ░░░░ -->
+<div class="page" id="page-products">
+<section id="products-hero"><div class="container">
+  <div class="sec-eye" style="color:var(--purple)" data-kr="소형 배치 식물 공식">Small-Batch Botanical Formulas</div>
+  <h1>The right formula.<br><em>Exactly the right amount.</em></h1>
+</div></section>
+<section id="products-list"><div class="container">
+  <p class="sec-lead reveal" style="margin-bottom:12px">Small-batch by design — the right formula changes as your skin changes. PibuLant is not a one-time purchase; it is a longitudinal skin relationship.</p>
+  <div style="background:#FFF9F0;border:1px solid #E8C880;padding:11px 14px;display:flex;gap:9px;font-size:11px;line-height:1.5;color:#7a6020;margin-bottom:44px;max-width:680px" class="reveal">
+    <span>⚠</span><span>Products are in pre-launch formulation phase. Join the waitlist to be notified at launch.</span>
+  </div>
+  <div class="prod-grid">
+    <div class="prod-row reveal">
+      <div class="prod-bottle-col">
+        <svg width="56" height="100" viewBox="0 0 56 100"><ellipse cx="28" cy="97" rx="21" ry="4" fill="rgba(58,36,104,.1)"/><rect x="18" y="2" width="20" height="15" rx="4" fill="#7050A0"/><path d="M23 16 L18 30 L38 30 L33 16Z" fill="#9070C0" opacity=".7"/><rect x="12" y="28" width="32" height="60" rx="10" fill="#9070C0"/><rect x="12" y="28" width="32" height="20" rx="10" fill="#B090DC" opacity=".45"/><rect x="14" y="32" width="8" height="32" rx="4" fill="rgba(255,255,255,.18)"/><rect x="12" y="56" width="32" height="18" fill="rgba(255,255,255,.12)"/><text x="28" y="65" text-anchor="middle" font-family="monospace" font-size="5" fill="white" font-weight="bold">SAFFRON</text><text x="28" y="72" text-anchor="middle" font-family="monospace" font-size="4" fill="rgba(255,255,255,.7)">GLOW</text><text x="28" y="84" text-anchor="middle" font-family="monospace" font-size="6.5" fill="rgba(255,255,255,.9)" font-weight="bold">10ml</text></svg>
+      </div>
+      <div class="prod-info-col">
+        <div class="prod-badge-txt" data-kr="브라이트닝 세럼 · 소형 배치">Brightening Serum · Small-Batch · Phase 2</div>
+        <div class="prod-name-txt">Saffron Glow Serum</div>
+        <div class="prod-desc-txt">Saffron-derived antioxidant (Crocus sativus, Iranian) at 0.4% — tyrosinase inhibitor calibrated to your melanin index. Combined with Niacinamide 4.0% and Kojic acid dipalmitate 1.5%.</div>
+        <div class="prod-tags-row"><span class="ptag ir">Saffron 0.4%</span><span class="ptag">Niacinamide 4.0%</span><span class="ptag">Kojic acid 1.5%</span><span class="ptag">HA complex 2.2%</span></div>
+      </div>
+      <div class="prod-action-col"><div><div class="prod-price-txt">₩28,000</div><div class="prod-vol-txt">10ml · ~4 weeks</div></div><button class="prod-btn" onclick="joinWaitlist(this)" data-kr="출시 알림 신청">Join Waitlist</button></div>
+    </div>
+    <div class="prod-row reveal" style="transition-delay:.1s">
+      <div class="prod-bottle-col">
+        <svg width="68" height="88" viewBox="0 0 68 88"><ellipse cx="34" cy="85" rx="26" ry="4.5" fill="rgba(58,36,104,.08)"/><rect x="10" y="46" width="48" height="32" rx="9" fill="#4A9060"/><ellipse cx="34" cy="46" rx="24" ry="7.5" fill="#6DB886"/><rect x="12" y="22" width="44" height="28" rx="9" fill="#3A7850" opacity=".9"/><ellipse cx="34" cy="22" rx="22" ry="7" fill="#6DB886" opacity=".75"/><rect x="15" y="26" width="10" height="20" rx="5" fill="rgba(255,255,255,.16)"/><rect x="14" y="36" width="40" height="12" fill="rgba(255,255,255,.1)"/><text x="34" y="43" text-anchor="middle" font-family="monospace" font-size="4.5" fill="white" font-weight="bold">LICORICE</text><text x="34" y="62" text-anchor="middle" font-family="monospace" font-size="7" fill="rgba(255,255,255,.9)" font-weight="bold">15ml</text></svg>
+      </div>
+      <div class="prod-info-col">
+        <div class="prod-badge-txt" data-kr="배리어 리페어 크림 · 소형 배치">Barrier Repair Cream · Small-Batch · Phase 2</div>
+        <div class="prod-name-txt">Licorice Barrier Cream</div>
+        <div class="prod-desc-txt">Licorice root extract (Glycyrrhiza glabra, Iranian) at 2.0% — Glabridin for anti-inflammatory barrier restoration, pH-optimized. Combined with Centella asiatica 1.8% and Ceramide NP.</div>
+        <div class="prod-tags-row"><span class="ptag ir">Licorice 2.0%</span><span class="ptag">CICA 1.8%</span><span class="ptag">Ceramide NP</span><span class="ptag">Niacinamide 4.0%</span></div>
+      </div>
+      <div class="prod-action-col"><div><div class="prod-price-txt">₩32,000</div><div class="prod-vol-txt">15ml · ~6 weeks</div></div><button class="prod-btn" onclick="joinWaitlist(this)" data-kr="출시 알림 신청">Join Waitlist</button></div>
+    </div>
+    <div class="prod-row reveal" style="transition-delay:.2s">
+      <div class="prod-bottle-col">
+        <svg width="68" height="88" viewBox="0 0 68 88"><ellipse cx="34" cy="85" rx="26" ry="4.5" fill="rgba(58,36,104,.08)"/><rect x="10" y="46" width="48" height="32" rx="9" fill="#7860B8"/><ellipse cx="34" cy="46" rx="24" ry="7.5" fill="#9880D0"/><rect x="12" y="22" width="44" height="28" rx="9" fill="#6050A0" opacity=".9"/><ellipse cx="34" cy="22" rx="22" ry="7" fill="#9880D0" opacity=".75"/><rect x="15" y="26" width="10" height="20" rx="5" fill="rgba(255,255,255,.15)"/><rect x="14" y="36" width="40" height="12" fill="rgba(255,255,255,.1)"/><text x="34" y="43" text-anchor="middle" font-family="monospace" font-size="4" fill="white" font-weight="bold">PIBULANT</text><text x="34" y="62" text-anchor="middle" font-family="monospace" font-size="7" fill="rgba(255,255,255,.9)" font-weight="bold">20ml</text></svg>
+      </div>
+      <div class="prod-info-col">
+        <div class="prod-badge-txt" data-kr="데일리 모이스처라이저 · 소형 배치">Daily Moisturizer · Small-Batch · Phase 2</div>
+        <div class="prod-name-txt">PibuLant Balance Cream</div>
+        <div class="prod-desc-txt">The essential base — Hyaluronic acid complex at 2.2% (multi-weight, surface + deep hydration) and Niacinamide 4.0%, pH-balanced to your individual skin pH reading from the sensor.</div>
+        <div class="prod-tags-row"><span class="ptag">HA complex 2.2%</span><span class="ptag">Niacinamide 4.0%</span><span class="ptag">Ceramide</span><span class="ptag">SPF booster</span></div>
+      </div>
+      <div class="prod-action-col"><div><div class="prod-price-txt">₩38,000</div><div class="prod-vol-txt">20ml · ~4 weeks</div></div><button class="prod-btn" onclick="joinWaitlist(this)" data-kr="출시 알림 신청">Join Waitlist</button></div>
+    </div>
+  </div>
+</div></section>
+</div><!-- end page-products -->
+
+<!-- ░░░░ ABOUT ░░░░ -->
+<div class="page" id="page-about">
+<section id="about-hero"><div class="container">
+  <div class="sec-eye" style="color:var(--leaf3)" data-kr="우리의 이야기">Our Story</div>
+  <h1>Skincare built on<br>biology, not <em>categories.</em></h1>
+</div></section>
+<section id="about-story"><div class="container">
+  <div class="story-grid">
+    <div class="story-left">
+      <blockquote>"Skincare should not be based on skin type categories. It should be based on each person's measurable biology."</blockquote>
+      <p>PibuLant was founded by <strong>Tara Ostovarpour</strong>, a Plant Genetic Engineer and R&D Scientist based in Seoul, Gangnam-gu. Her background in plant genetics gave her a precise understanding of active compounds in botanicals — and why standardized skincare formulas rarely work the way they should.</p>
+      <p>The problem Tara set out to solve is both simple and massive: every year, a significant portion of all skincare products purchased are thrown away — wrong formula, no effect, sensitivity reaction. The waste is enormous. And the solution isn't just "more personalization" — it's a fundamentally different production model.</p>
+      <p>PibuLant's approach: use AI photo analysis to understand each person's skin without any hardware, generate a precise formula using Iranian botanical actives and K-beauty biotechnology, and produce it in small batches through partner labs only when ordered. No pre-made stock. No surplus. Only what the skin actually needs, in the amount it needs.</p>
+      <p>The ingredient layer draws from Iran's botanical heritage — Saffron from Kurdistan, Licorice from Isfahan, Thyme from the Zagros mountains, Rosehip from the Alborz foothills. Each botanical is scientifically validated for its specific active role and blended with Korean biotechnology bases.</p>
+      <p>PibuLant is currently in Phase 1 — the AI web application MVP is live and being validated with real users. Phase 2 (small-batch product line + partner labs) follows as the platform grows. Tara is currently presenting PibuLant to the OASIS 5th Cohort accelerator program in Seoul and applying to the 2026 Global Startup Commercialization Support Program (KISED/Ministry of SMEs).</p>
+    </div>
+    <div class="story-right">
+      <div class="founder-card">
+        <div class="founder-av">T</div>
+        <div class="founder-name">Tara Ostovarpour</div>
+        <div class="founder-title">Founder · PibuLant</div>
+        <div class="founder-contact">
+          <div class="fc-row"><span class="fc-ic">📞</span> 010-7297-2252</div>
+          <div class="fc-row"><span class="fc-ic">✉️</span> ostovar.t99@gmail.com</div>
+          <div class="fc-row"><span class="fc-ic">💼</span> LinkedIn: Tara Ostovarpour</div>
+          <div class="fc-row"><span class="fc-ic">📍</span> Seoul, Gangnam-gu</div>
+        </div>
+        <div class="founder-bio">Plant Genetic Engineer and R&D Scientist. Founder of PibuLant — an AI-powered platform that analyzes skin from a photo, generates a personalized formula, and produces it in small batches through partner labs. Zero waste. Only what your skin needs. Currently applying to KISED 2026 Global Startup Commercialization Program and OASIS 5th Cohort, Seoul.</div>
+        <div class="ftags">
+          <span class="ftag">Plant Genetic Engineering</span>
+          <span class="ftag">R&D Science</span>
+          <span class="ftag">Iranian Botanicals</span>
+          <span class="ftag">K-Beauty Biotech</span>
+          <span class="ftag">AI Formulation</span>
+          <span class="ftag">Biomarker Sensing</span>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:20px;background:var(--lav4);border:1px solid var(--border)">
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--textl);margin-bottom:10px" data-kr="현재 상태">Current Status — 2026</div>
+        <div style="font-size:12px;color:var(--textm);line-height:1.8;font-weight:300">Phase 1 MVP complete · Web application live · OASIS 5th Cohort applicant · Seeking seed investment for Phase 2 product development and Phase 3 sensor R&D.</div>
+      </div>
+    </div>
+  </div>
+</div></section>
+</div><!-- end page-about -->
+
+<!-- ░░░░ CONTACT ░░░░ -->
+<div class="page" id="page-contact">
+<section id="contact-hero"><div class="container">
+  <div class="sec-eye" style="color:var(--leaf3)" data-kr="연락하기">Get in Touch</div>
+  <h1>Let's talk about<br><em>what comes next.</em></h1>
+</div></section>
+<section id="contact-form-section"><div class="container">
+  <div class="contact-grid">
+    <div class="contact-left">
+      <p data-kr="투자자, 파트너, 조기 사용자 — PibuLant에 관심 있는 모든 분들과 이야기 나누고 싶습니다.">Whether you're an investor, potential partner, early user, or simply curious about the science — we'd like to hear from you.</p>
+      <div class="ci-row"><div class="ci-label">Stage</div><div class="ci-val">Pre-seed · Phase 1 MVP complete</div></div>
+      <div class="ci-row"><div class="ci-label">Program</div><div class="ci-val">OASIS 5th Cohort applicant</div></div>
+      <div class="ci-row"><div class="ci-label">Founder</div><div class="ci-val">Tara Ostovarpour · ostovar.t99@gmail.com</div></div>
+      <div class="ci-row"><div class="ci-label">Looking for</div><div class="ci-val">Seed investment · Formulation partners · Early beta users</div></div>
+      <div class="ci-row" style="border:none"><div class="ci-label">Demo</div><div class="ci-val" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px" onclick="openDemo()">Live web app — click to launch</div></div>
+    </div>
+    <div class="contact-right">
+      <div id="cfwrap">
+        <div class="form-group"><label class="form-label" data-kr="이름">Name</label><input class="form-input" id="cf-name" type="text" placeholder="Your name"></div>
+        <div class="form-group"><label class="form-label" data-kr="이메일">Email</label><input class="form-input" id="cf-email" type="email" placeholder="your@email.com"></div>
+        <div class="form-group"><label class="form-label" data-kr="문의 유형">Inquiry type</label>
+          <select class="form-select" id="cf-type"><option value="">Select type</option><option value="investor">Investment inquiry</option><option value="partner">Partnership / B2B</option><option value="user">Early user / beta</option><option value="press">Press / media</option><option value="other">Other</option></select>
+        </div>
+        <div class="form-group"><label class="form-label" data-kr="메시지">Message</label><textarea class="form-textarea" id="cf-msg" placeholder="Tell us about your interest in PibuLant..."></textarea></div>
+        <button class="form-submit" onclick="submitContact()" data-kr="메시지 보내기">Send Message</button>
+      </div>
+      <div class="form-success" id="cfsuccess"></div>
+    </div>
+  </div>
+</div></section>
+</div><!-- end page-contact -->
+
+<!-- SHARED FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">
+        <svg width="28" height="28" viewBox="0 0 76 76" fill="none"><circle cx="38" cy="38" r="38" fill="rgba(197,184,232,.1)"/><rect x="14" y="40" width="48" height="24" rx="8" fill="rgba(197,184,232,.3)"/><rect x="14" y="40" width="48" height="10" rx="5" fill="rgba(197,184,232,.5)"/><rect x="18" y="36" width="40" height="8" rx="4" fill="rgba(197,184,232,.4)"/><path d="M38 8 C30 18 24 28 30 36 C34 40 44 38 47 30 C51 20 44 10 38 8Z" fill="rgba(109,184,107,.55)"/><path d="M58 18 L59 21 L62 22 L59 23 L58 26 L57 23 L54 22 L57 21Z" fill="rgba(197,184,232,.3)"/></svg>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:rgba(255,255,255,.5)">PibuLant</span>
+      </div>
+      <div class="footer-tagline">Skin Intelligence Platform · Tara Ostovarpour · Korean Biotechnology × Iranian Botanicals</div>
+    </div>
+    <div class="footer-nav">
+      <a onclick="showPage('home')">Home</a>
+      <a onclick="showPage('technology')">Technology</a>
+      <a onclick="showPage('products')">Products</a>
+      <a onclick="showPage('about')">About</a>
+      <a onclick="showPage('contact')">Contact</a>
+      <a onclick="openDemo()" style="color:var(--leaf3)">Try Demo</a>
+    </div>
+  </div>
+  <div class="footer-copy">© 2026 PibuLant · Tara Ostovarpour · AI Skin Intelligence Platform · Seoul, Korea · All rights reserved</div>
+</footer>
+
+</div><!-- end main-col -->
+
+<!-- ════════════ SIDEBAR ════════════ -->
+<aside class="sidebar-col">
+
+  <!-- Founder mini card -->
+  <div class="sb-founder">
+    <div class="sb-founder-av">T</div>
+    <div class="sb-founder-name">Tara Ostovarpour</div>
+    <div class="sb-founder-title">Founder · Plant Genetic Engineer · R&D Scientist</div>
+    <div class="sb-founder-bio">Building PibuLant — AI skin intelligence + Iranian botanical actives + K-beauty biotech. OASIS 5th Cohort applicant, Seoul.</div>
+    <div class="sb-contact-row">📞 <a href="tel:01072972252">010-7297-2252</a></div>
+    <div class="sb-contact-row">✉️ <a href="mailto:ostovar.t99@gmail.com">ostovar.t99@gmail.com</a></div>
+    <div class="sb-contact-row">📍 Seoul, Gangnam-gu</div>
+  </div>
+
+  <!-- Personalized formula + order widget -->
+  <div class="sb-formula">
+    <div class="sb-formula-title">🔬 Your Skin Formula</div>
+    <div class="sb-formula-sub">Quick analysis — get your personalized product in seconds</div>
+    <div class="sb-q">
+      <label data-kr="피부 타입">Skin type</label>
+      <select id="sb-skin">
+        <option value="">Select…</option>
+        <option value="dry">Dry / Tight</option>
+        <option value="oily">Oily / Shiny</option>
+        <option value="combo">Combination</option>
+        <option value="normal">Normal</option>
+      </select>
+    </div>
+    <div class="sb-q">
+      <label data-kr="주요 고민">Primary concern</label>
+      <select id="sb-concern">
+        <option value="">Select…</option>
+        <option value="pig">Hyperpigmentation</option>
+        <option value="acne">Acne & breakouts</option>
+        <option value="age">Aging & texture</option>
+        <option value="bar">Redness & barrier</option>
+      </select>
+    </div>
+    <div class="sb-q">
+      <label data-kr="민감도">Sensitivity</label>
+      <select id="sb-sens">
+        <option value="">Select…</option>
+        <option value="low">Resilient</option>
+        <option value="mid">Moderate</option>
+        <option value="high">Highly reactive</option>
+      </select>
+    </div>
+    <button class="sb-analyze-btn" onclick="sbAnalyze()" data-kr="포뮬레이션 분석">Generate My Formula</button>
+    <div class="sb-result" id="sb-result">
+      <div class="sb-res-label">Your active ingredients</div>
+      <div id="sb-ings"></div>
+      <div style="margin-top:12px;font-size:11px;color:var(--textl);line-height:1.5" id="sb-rec"></div>
+      <button class="sb-order-btn" onclick="sbOrder()" data-kr="맞춤 제품 주문">Order My Custom Formula</button>
+      <div class="sb-order-confirm" id="sb-confirm">✓ Pre-order registered! We'll contact you at launch.</div>
+    </div>
+  </div>
+
+  <!-- Status + phase -->
+  <div class="sb-section">
+    <div class="sb-label">Project Status · 2026</div>
+    <div style="font-size:11px;color:var(--textm);line-height:1.7;font-weight:300">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--leaf);flex-shrink:0"></span>
+        <span><strong>Phase 1</strong> — Web App MVP Live</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--lav);flex-shrink:0"></span>
+        <span><strong>Phase 2</strong> — Product line · 2026–27</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0"></span>
+        <span><strong>Phase 3</strong> — Sensor hardware · 2027–28</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo CTA -->
+  <div class="sb-demo">
+    <div class="sb-label" data-kr="인터랙티브 데모">Interactive Demo</div>
+    <div style="font-size:11px;color:var(--textm);line-height:1.6;font-weight:300">Experience the complete PibuLant skin analysis journey — sensor scan, genetic map, and personalized formula in ~3 minutes.</div>
+    <button class="sb-demo-btn" onclick="openDemo()">
+      🔬 Launch Demo
+    </button>
+  </div>
+
+  <!-- Biotech tagline -->
+  <div style="padding:20px 24px;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <svg width="22" height="22" viewBox="0 0 76 76" fill="none"><circle cx="38" cy="38" r="38" fill="#EDE8F5"/><rect x="14" y="40" width="48" height="24" rx="8" fill="#C8B8E8"/><rect x="14" y="40" width="48" height="10" rx="5" fill="#9B7EC8"/><rect x="18" y="36" width="40" height="8" rx="4" fill="#B8A4DC"/><path d="M38 8 C30 18 24 28 30 36 C34 40 44 38 47 30 C51 20 44 10 38 8Z" fill="#6DB86B" opacity=".9"/></svg>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;color:var(--deeper)">PibuLant</span>
+    </div>
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--textl)">Biotech-Driven Beauty Innovation</div>
+    <div style="font-size:9px;color:var(--textl);margin-top:4px;font-style:italic;font-family:'Cormorant Garamond',serif">생명공학 기반 뷰티 혁신</div>
+  </div>
+
+</aside>
+
+</div><!-- end site-layout -->
+
+<script>
+/* ── CURSOR ── */
+const cur=document.getElementById('cursor'),ring=document.getElementById('cring');
+document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px';});
+document.querySelectorAll('a,button,[onclick],.bot-card,.how-card,.prod-row').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='14px';cur.style.height='14px';cur.style.background='var(--leaf)';ring.style.width='48px';ring.style.height='48px';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='9px';cur.style.height='9px';cur.style.background='var(--deep)';ring.style.width='34px';ring.style.height='34px';});
+});
+
+/* ── NAV SCROLL ── */
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40));
+
+/* ── PAGES ── */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(observeReveal,100);
+}
+
+/* ── REVEAL ── */
+function observeReveal(){
+  const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');e.target.classList.add('revealed');}}),{threshold:.1});
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el=>obs.observe(el));
+}
+observeReveal();
+const rmObs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('revealed');}),{threshold:.15});
+document.querySelectorAll('.rm-phase').forEach(el=>rmObs.observe(el));
+
+/* ── LEAF PARTICLES ── */
+(function(){
+  const c=document.getElementById('leaf-p'); if(!c) return;
+  for(let i=0;i<14;i++){
+    const d=document.createElement('div');
+    d.className='lp';
+    const s=Math.random()*14+6;
+    d.style.cssText=`left:${Math.random()*100}%;width:${s}px;height:${s*1.4}px;animation-duration:${Math.random()*18+12}s;animation-delay:-${Math.random()*20}s;`;
+    d.innerHTML=`<svg viewBox="0 0 20 28" fill="none"><path d="M10 2 C5 8 3 14 6 20 C8 24 14 24 16 20 C19 14 17 8 10 2Z" fill="rgba(109,184,107,.6)"/><path d="M10 2 C10 10 10 18 8 22" stroke="rgba(74,148,72,.5)" stroke-width="1" fill="none"/></svg>`;
+    c.appendChild(d);
+  }
+})();
+
+/* ── LANG ── */
+let isKR=false;
+function toggleLang(){
+  isKR=!isKR;
+  document.querySelector('.lang-btn').textContent=isKR?'한국어 / EN':'EN / 한국어';
+  document.querySelectorAll('[data-kr]').forEach(el=>{if(!el._en)el._en=el.textContent;el.textContent=isKR?el.getAttribute('data-kr'):el._en;});
+}
+
+/* ── DEMO ── */
+function openDemo(){
+  showToast('Opening demo — please open pibulant-mvp-v5.html in your browser');
+}
+
+/* ── WAITLIST ── */
+function joinWaitlist(btn){
+  btn.textContent='✓ On waitlist';btn.classList.add('added');btn.disabled=true;
+  showToast('Added to waitlist — we\'ll notify you at launch!');
+}
+
+/* ── CONTACT ── */
+function submitContact(){
+  const n=document.getElementById('cf-name').value,e=document.getElementById('cf-email').value;
+  if(!n||!e){showToast('Please fill in your name and email.');return;}
+  document.getElementById('cfwrap').style.display='none';
+  const s=document.getElementById('cfsuccess');
+  s.style.display='block';s.textContent=`✓ Thank you, ${n}. We'll be in touch at ${e} soon.`;
+  showToast('Message sent! Thank you.');
+}
+
+/* ── TOAST ── */
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+/* ── SIDEBAR FORMULA ── */
+function sbAnalyze(){
+  const skin=document.getElementById('sb-skin').value;
+  const concern=document.getElementById('sb-concern').value;
+  const sens=document.getElementById('sb-sens').value;
+  if(!skin||!concern||!sens){showToast('Please select all three options.');return;}
+  const ings=buildSbIngs(skin,concern,sens);
+  const rec=getSbRec(concern);
+  const ingEl=document.getElementById('sb-ings');
+  ingEl.innerHTML=ings.map(g=>`<div class="sb-ing"><span class="sb-ing-name">${g.n}${g.ir?`<span class="sb-ing-ir">🌿</span>`:''}</span><span class="sb-ing-pct">${g.p}%</span></div>`).join('');
+  document.getElementById('sb-rec').innerHTML=`<strong>Recommended:</strong> ${rec}`;
+  document.getElementById('sb-result').style.display='block';
+  document.getElementById('sb-confirm').style.display='none';
+}
+
+function buildSbIngs(skin,concern,sens){
+  const ings=[{n:'Niacinamide',p:4.0,ir:false}];
+  if(concern==='pig'){ings.push({n:'Saffron extract',p:0.4,ir:true});ings.push({n:'Kojic acid',p:1.5,ir:false});}
+  else if(concern==='bar'||skin==='dry'){ings.push({n:'Licorice root',p:2.0,ir:true});ings.push({n:'CICA',p:1.8,ir:false});}
+  else if(concern==='acne'){ings.push({n:'Thyme extract',p:0.6,ir:true});ings.push({n:'Salicylic acid',p:1.2,ir:false});}
+  else if(concern==='age'){ings.push({n:'Rosehip oil',p:1.1,ir:true});ings.push({n:'Adenosine',p:0.04,ir:false});}
+  ings.push({n:'Hyaluronic acid',p:2.2,ir:false});
+  return ings.slice(0,4);
+}
+
+function getSbRec(concern){
+  const m={pig:'Saffron Glow Serum 10ml + Balance Cream 20ml',acne:'Thyme Clarifying Gel 10ml + Balance Cream 20ml',age:'Rosehip Renewal Serum 10ml + Balance Cream 20ml',bar:'Licorice Barrier Cream 15ml + Balance Cream 20ml'};
+  return m[concern]||'PibuLant Balance Cream 20ml';
+}
+
+function sbOrder(){
+  document.getElementById('sb-confirm').style.display='block';
+  showToast('Pre-order registered! Tara will be in touch at launch.');
+}
+</script>
+</body>
+</html>
